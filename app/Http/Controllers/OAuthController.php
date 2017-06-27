@@ -66,7 +66,7 @@ class OAuthController extends Controller {
 				$accessToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
 			}
 			$userData = $this->getUserFromToken($client, $accessToken['id_token']);
-			$service = new Google_Service_Youtube($client);
+			$service = new \Google_Service_Youtube($client);
 			$part  = 'snippet,contentDetails';
 			$params = array('mine'=>true);
 			if($pageToken!=null){
@@ -97,8 +97,16 @@ class OAuthController extends Controller {
 	}
 
 	public function getYoutubeReadClient(){
+		$API_KEY = $this->getYoutubeAPIKey();
 		$client = new Google_Client();
 		$client->addScopes(Google_Service_Youtube::YOUTUBE_READONLY);
+		$client->setAccessType('offline');
+		$client->setDeveloperKey($API_KEY);
+		
+	}
+
+	public function getYoutubeAPIKey(){
+		return env('YOUTUBE_API_KEY','yourkey');
 	}
 
 	public function getClientId(){
