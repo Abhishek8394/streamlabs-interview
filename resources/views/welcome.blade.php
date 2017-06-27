@@ -2,7 +2,11 @@
 	<head>
 		<title>Laravel</title>
 		
-		<link href='//fonts.googleapis.com/css?family=Lato:100' rel='stylesheet' type='text/css'>
+		<link href="{{ asset('/css/app.css') }}" rel="stylesheet">
+
+	<!-- Fonts -->
+	<link href='//fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
+
 
 		<style>
 			body {
@@ -35,13 +39,20 @@
 			.quote {
 				font-size: 24px;
 			}
+
 		</style>
 	</head>
 	<body>
 		<div class="container">
 			<div class="content">
-				<div class="title">Laravel 5</div>
-				<div class="quote">{{ Inspiring::quote() }}</div>
+				<div class="panel">
+					<h3><a href="{{route('viewSubscriptions')}}">View OAuth Sample</a></h3>
+					<p class="quote">Shows your subscribed channels on YouTube</p>
+				</div>
+				<div class="panel">
+					<h3><a href="{{route('viewChat')}}">View Comments</a></h3>
+					<p class="quote">Shows comments of a youtube video</p>
+				</div>
 			</div>
 		</div>
 	</body>

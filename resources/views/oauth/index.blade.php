@@ -3,7 +3,8 @@
 	<div class="container">
 		<h1>OAuth Works</h1>
 		<div>
-			<img src="{{$userData['picture']}}" class="img-responsive"></img> Hello, {{$userData['name']}}!
+			<img src="{{$userData['picture']}}" class="img-responsive"></img> 
+			<h2>Hello, {{$userData['name']}}!</h2>
 		</div>
 		<h4>Your Youtube subscriptions</h4>
 		@if(count($subscriptions['modelData']['items'])>0)
@@ -11,7 +12,7 @@
 				@foreach($subscriptions['modelData']['items'] as $item)
 					<li>
 						<div>
-							<strong>{{$item['snippet']['title']}}</strong>
+							<p>{{$item['snippet']['title']}}</p>
 						</div>
 					</li>
 				@endforeach

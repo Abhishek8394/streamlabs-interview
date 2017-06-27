@@ -12,6 +12,7 @@
 		<span style="display:none" id="videoUrl" data-url="{{$videoUrl}}"></span>
 		<span style="display:none" id="csrfToken" data-value="{{csrf_token()}}"></span>
 		<h3>Showing comments for YouTube video: <a href="{{$videoUrl}}">{{$videoUrl}}</a></h3>
+		<p>Hit next at the bottom of the page to load more comments</p>
 		@if(count($comments['modelData']['items'])>0)
 			<div id="commentContainer">
 				@foreach($comments['modelData']['items'] as $item)
