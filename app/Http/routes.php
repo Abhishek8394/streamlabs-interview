@@ -18,6 +18,9 @@ Route::get('home', 'HomeController@index');
 Route::get('oauth', 'OAuthController@index');
 Route::get('authenticated_google', ['as'=>'authenticated_google','uses'=>'OAuthController@authenticated']);
 Route::get('viewSubscriptions',['as'=>'viewSubscriptions', 'uses'=>'OAuthController@viewSubscriptions']);
+// https://www.youtube.com/watch?v=RU3srXqYAO0
+Route::get('viewChat',['as'=>'viewChat','uses'=>'OAuthController@viewChat']);
+Route::post('fetchChats',['as'=>'fetchChats', 'uses'=>'OAuthController@fetchChats']);
 
 Route::controllers([
 	'auth' => 'Auth\AuthController',

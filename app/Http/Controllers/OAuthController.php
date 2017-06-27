@@ -32,8 +32,12 @@ class OAuthController extends Controller {
 	public function authenticated(){
 		$input = \Input::all();
 		// echo var_dump($input);
-		$auth_code = $input['code'];
 		$client = $this->getClient();
+		if(isset($input['error'])){
+			$authurl = $client->createAuthUrl();
+			return view('oauth.error')->with('error',$input['error'])->with('authurl',$authurl);
+		}
+		$auth_code = $input['code'];
 		$accessToken =$client->fetchAccessTokenWithAuthCode($auth_code);
 		// echo var_dump($accessToken);
 		// echo "<br>Refresh: ".$client->getRefreshToken()."<br>";
@@ -92,6 +96,11 @@ class OAuthController extends Controller {
 		return $client;
 	}
 
+	public function getYoutubeReadClient(){
+		$client = new Google_Client();
+		$client->addScopes(Google_Service_Youtube::YOUTUBE_READONLY);
+	}
+
 	public function getClientId(){
 		return env('OAUTH2_CLIENT_ID','yourclientid');
 	}
@@ -106,5 +115,28 @@ class OAuthController extends Controller {
 	    return $ticket;
 	  }
 	  return false;
+	}
+
+	function viewChat(){
+		return view('chats.index');
+	}
+
+	function fetchChats(){
+		$url = \Input::get('urlbar');
+		$youtubeurl = $this->verifyYoutubeURL($url);
+		if($youtubeurl===false){
+			return \Redirect::back()->with('error','Enter valid youtube live stream url');
+		}
+		$client = $this->getYoutubeReadClient();
+		return $youtubeurl;
+	}
+
+	function verifyYoutubeURL($url){
+		$matches = array();
+		$is_valid = preg_match('/http[s]?:\/\/(www|m)\.youtube\.com\/watch\?v=([a-zA-Z0-9_]+)/i', $url, $matches);
+		if($is_valid==1){
+			return $matches;
+		}
+		return false;
 	}
 }
