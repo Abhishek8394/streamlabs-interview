@@ -99,10 +99,10 @@ class OAuthController extends Controller {
 	public function getYoutubeReadClient(){
 		$API_KEY = $this->getYoutubeAPIKey();
 		$client = new Google_Client();
-		$client->addScopes(Google_Service_YouTube::YOUTUBE_READONLY);
-		$client->setAccessType('offline');
+		// $client->addScopes(Google_Service_YouTube::YOUTUBE_READONLY);
+		// $client->setAccessType('offline');
 		$client->setDeveloperKey($API_KEY);
-		
+		return $client;
 	}
 
 	public function getYoutubeAPIKey(){
@@ -130,13 +130,49 @@ class OAuthController extends Controller {
 	}
 
 	function fetchChats(){
-		$url = \Input::get('urlbar');
+		$url = \Input::get('urlbar',"");
+		$pageToken = \Input::get('pageToken',null);
 		$youtubeurl = $this->verifyYoutubeURL($url);
 		if($youtubeurl===false){
 			return \Redirect::back()->with('error','Enter valid youtube live stream url');
 		}
+		$comments = ($this->getCommentsFromYouTube());
+		// return dd($comments);
+		return view('chats.list')->with('videoUrl',$url)->with('comments',$comments);	
+	}
+
+	public function getCommentsFromYouTube(){
+		$url = \Input::get('urlbar',"");
+		$pageToken = \Input::get('pageToken',null);
+		$youtubeurl = $this->verifyYoutubeURL($url);
+		if($youtubeurl===false){
+			$result = array('error'=>'invalid params');
+			return json_encode($result);//\Redirect::back()->with('error','Enter valid youtube live stream url');
+		}
 		$client = $this->getYoutubeReadClient();
-		return $youtubeurl;
+		$videoId = $youtubeurl[2];
+		$youtube = new Google_Service_YouTube($client);
+		$params = array('videoId'=>$videoId,'textFormat'=>'plainText');
+		if($pageToken!=null){
+			$params['pageToken'] = $pageToken;
+		}
+		$comments = $youtube->commentThreads->listCommentThreads('snippet',$params);
+		// dd($comments);
+		$json_comments = $this->convertCommentToJson($comments);
+		return $json_comments;
+	}
+
+	public function convertCommentToJson($comments){
+		$result = array();
+		if(isset($comments['nextPageToken'])){
+			$result['nextPageToken'] = $comments['nextPageToken'];
+		}
+		if(isset($comments['prevPageToken'])){
+			$result['prevPageToken'] = $comments['prevPageToken'];
+		}
+		$result['modelData'] = $comments['modelData'];
+		return $result;
+		
 	}
 
 	function verifyYoutubeURL($url){
