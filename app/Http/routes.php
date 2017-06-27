@@ -17,6 +17,7 @@ Route::get('home', 'HomeController@index');
 
 Route::get('oauth', 'OAuthController@index');
 Route::get('authenticated_google', ['as'=>'authenticated_google','uses'=>'OAuthController@authenticated']);
+Route::get('viewSubscriptions',['as'=>'viewSubscriptions', 'uses'=>'OAuthController@viewSubscriptions']);
 
 Route::controllers([
 	'auth' => 'Auth\AuthController',

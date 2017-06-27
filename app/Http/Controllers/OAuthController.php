@@ -22,15 +22,11 @@ class OAuthController extends Controller {
 	 * @return Response
 	 */
 	public function index()
-	{
-		$SECTION_TYPES = array("allPlaylists", "completedEvents", "likedPlaylists",
-						  "likes", "liveEvents", "multipleChannels", "multiplePlaylists",
-						  "popularUploads", "recentActivity", "recentPosts", "recentUploads",
-						  "singlePlaylist", "upcomingEvents");		
+	{	
 		$client = $this->getClient();
 		$authurl = $client->createAuthUrl();
-		echo "<a href=\"$authurl\">$authurl</a><br>";
-		return view('home');
+		// echo "<a href=\"$authurl\">$authurl</a><br>";
+		return view('oauth.login')->with('authurl',$authurl);
 	}
 
 	public function authenticated(){
@@ -40,6 +36,7 @@ class OAuthController extends Controller {
 		$client = $this->getClient();
 		$accessToken =$client->fetchAccessTokenWithAuthCode($auth_code);
 		// echo var_dump($accessToken);
+		// echo "<br>Refresh: ".$client->getRefreshToken()."<br>";
 		$client->setAccessToken($accessToken);
 		if($client->isAccessTokenExpired()){
 			$accessToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
@@ -48,24 +45,50 @@ class OAuthController extends Controller {
 		// echo "<br>";
 		// echo var_dump($userData);
 		// echo"<br>";
-		$service = new Google_Service_Youtube($client);
-		$part  = 'snippet,contentDetails';
-		$params = array('mine'=>true);
-		$subscriptions = $service->subscriptions->listSubscriptions($part, $params);
-		// echo var_dump($subscriptions);
-		return view('home');
+		\Session::put('user',$userData);
+		\Session::put('accessToken',$accessToken);
+		\Session::put('refreshToken', $client->getRefreshToken());
+		return \Redirect::route('viewSubscriptions');
+	}
+
+	public function viewSubscriptions(){
+		if(\Session::has('user')){
+			// authenticated already	
+			$pageToken = \Input::get('pageToken',null);		
+			$client = $this->getClient();
+			$accessToken = \Session::get('accessToken');
+			$client->setAccessToken($accessToken);
+			if($client->isAccessTokenExpired()){
+				$accessToken = $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+			}
+			$userData = $this->getUserFromToken($client, $accessToken['id_token']);
+			$service = new Google_Service_Youtube($client);
+			$part  = 'snippet,contentDetails';
+			$params = array('mine'=>true);
+			if($pageToken!=null){
+				$params['pageToken'] = $pageToken;
+			}
+			$subscriptions = $service->subscriptions->listSubscriptions($part, $params);			
+			\Session::put('user',$userData);
+			\Session::put('accessToken',$accessToken);
+			\Session::put('refreshToken', $client->getRefreshToken());
+			// dd($subscriptions);
+			return view('oauth.index')->with('userData',$userData)->with('subscriptions',$subscriptions);
+		}
+		return \Redirect::to('oauth');
 	}
 
 	public function getClient(){
 		$OAUTH2_CLIENT_ID = $this->getClientId();
 		$OAUTH2_CLIENT_SECRET = $this->getClientSecret();
 		$client = new Google_Client();
-		// $client->setApplicationName('StreamFFF interview app');
-		$client->setScopes(array('https://www.googleapis.com/auth/youtube.force-ssl','https://www.googleapis.com/auth/userinfo.email'));
+		$client->setScopes(array('https://www.googleapis.com/auth/youtube.force-ssl','https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/userinfo.profile'));
 		$client->setRedirectUri(route('authenticated_google'));
 		$client->setClientId($OAUTH2_CLIENT_ID);
 		$client->setClientSecret($OAUTH2_CLIENT_SECRET);
 		$client->setAccessType('offline');
+		// remove after testing if creates bad experience. Needed to force refresh tokens everytime.
+		$client->setPrompt('consent');	
 		return $client;
 	}
 

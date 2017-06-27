@@ -12,7 +12,12 @@ class AddUserAccessTokens extends Migration {
 	 */
 	public function up()
 	{
-		//
+		Schema::table('users', function($table){
+			$table->string('google_access_token');
+			$table->string('google_refresh_token');
+			$table->string('google_token_life');
+			$table->timestamp('google_token_created');			
+		});
 	}
 
 	/**
@@ -22,7 +27,12 @@ class AddUserAccessTokens extends Migration {
 	 */
 	public function down()
 	{
-		//
+		Schema::table('users',function($table){
+			$table->dropColumn('google_token_created');
+			$table->dropColumn('google_token_life');
+			$table->dropColumn('google_refresh_token');
+			$table->dropColumn('google_access_token');
+		});
 	}
 
 }
