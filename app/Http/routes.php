@@ -15,6 +15,9 @@ Route::get('/', 'WelcomeController@index');
 
 Route::get('home', 'HomeController@index');
 
+Route::get('oauth', 'OAuthController@index');
+Route::get('authenticated_google', ['as'=>'authenticated_google','uses'=>'OAuthController@authenticated']);
+
 Route::controllers([
 	'auth' => 'Auth\AuthController',
 	'password' => 'Auth\PasswordController',
